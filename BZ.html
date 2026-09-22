@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>纯苯（BZ）· 仓单季节性 · 化工品仓单日报</title>
+<style>
+  :root{
+    --bg:#f5f3ec; --panel:#fdfcf7; --ink:#211d19; --ink2:#6e675c; --ink3:#9a917f;
+    --line:#ddd6c4; --accent:#c2402a; --green:#256b4a; --amber:#b45309;
+    --mono:'JetBrains Mono','SF Mono',ui-monospace,Consolas,'PingFang SC','Microsoft YaHei',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:13px;
+       -webkit-font-smoothing:antialiased;padding:28px 32px 20px}
+  .wrap{max-width:1320px;margin:0 auto}
+  .back{display:inline-block;font-size:11px;letter-spacing:.12em;color:var(--ink2);text-decoration:none;
+        border:1px solid var(--line);background:var(--panel);padding:5px 14px;margin-bottom:14px}
+  .back:hover{border-color:var(--ink);color:var(--ink)}
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px;border-bottom:1px solid var(--ink);padding-bottom:14px}
+  h1{font-size:24px;font-weight:700;letter-spacing:.06em}
+  h1 small{font-size:12px;font-weight:400;color:var(--ink2);letter-spacing:.14em;display:block;margin-top:4px}
+  .nav{margin-left:auto;display:flex;gap:0}
+  .nav a{border:1px solid var(--ink);color:var(--ink);font-size:12px;letter-spacing:.1em;
+         padding:8px 18px;text-decoration:none;transition:all .15s ease}
+  .nav a+a{border-left:none}
+  .nav a:hover{background:#e9e4d6}
+  .meta{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 0 4px;color:var(--ink2);
+        font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .meta b{color:var(--ink);font-weight:600}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);
+         border:1px solid var(--line);margin:10px 0 18px}
+  .stat{background:var(--panel);padding:10px 14px}
+  .stat .k{font-size:10px;letter-spacing:.16em;color:var(--ink3);text-transform:uppercase}
+  .stat .v{font-size:20px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+  .stat .s{font-size:10px;color:var(--ink2);margin-top:2px}
+  .up{color:var(--accent)} .dn{color:var(--green)}
+  .years{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 8px}
+  .years .lab{font-size:10px;letter-spacing:.16em;color:var(--ink3);text-transform:uppercase;margin-right:4px}
+  .ychip{border:1px solid var(--line);background:var(--panel);color:var(--ink2);font-family:var(--mono);
+         font-size:11px;padding:4px 12px;cursor:pointer;transition:all .15s ease;letter-spacing:.05em}
+  .ychip.on{border-color:var(--accent);color:var(--accent);font-weight:700;background:#faf0ec}
+  .ychip:hover:not(.on){border-color:var(--ink3)}
+  #chart{width:100%;height:990px;background:var(--panel);border:1px solid var(--line)}
+  .legend-note{display:flex;gap:22px;flex-wrap:wrap;font-size:10px;color:var(--ink2);
+               letter-spacing:.08em;padding:8px 2px 0}
+  .sw{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px}
+  footer{margin-top:18px;border-top:1px solid var(--line);padding-top:12px;font-size:10.5px;
+         color:var(--ink2);line-height:1.9;letter-spacing:.03em}
+  footer b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← 返回仓单日报首页</a>
+  <header>
+    <h1>纯苯 <span style="color:var(--ink3);font-weight:400">BZ</span><small>仓单季节性 · 每日变动 / 注销日标注</small></h1>
+    <div class="nav" id="sib"></div>
+  </header>
+  <div class="meta" id="meta"></div>
+  <div class="stats" id="stats"></div>
+  <div class="years" id="years"></div>
+  <div id="chart"></div>
+  <div class="legend-note">
+    <span><span class="sw" style="background:var(--accent)"></span>高亮年份（点击年份标签切换）</span>
+    <span><span class="sw" style="background:var(--accent);height:8px"></span>日变动·增加</span>
+    <span><span class="sw" style="background:var(--green);height:8px"></span>日变动·减少（注销）</span>
+    <span style="color:var(--amber)">◆ 仓单清零日（强制注销窗口）</span>
+    <span style="color:var(--ink3)">● 大额自愿注销（单日降幅≥15%）</span>
+    <span style="color:var(--amber)">▦ 琥珀色竖带 = 规则注销月份</span>
+  </div>
+  <footer id="foot"></footer>
+</div>
+<script src="echarts.min.js"></script>
+<script>
+const D = {"code": "BZ", "name": "纯苯", "exch": "大商所", "unit": "手", "rule": "每个交割月份最后交割日前（含当日）须全部注销", "detail": "即仓单不能跨交割月持有，逐月滚动注销", "short": "每个交割月最后交割日前全部注销（不可跨月持有）", "cancelMonths": [], "listed": "2025-07", "group": "烯烃 / 芳烃", "nxt": null, "years": {"2026": {"03-03": [10, 10], "03-04": [178, 168], "03-05": [192, 14], "03-06": [548, 356], "03-09": [370, -178], "03-10": [391, 21], "03-11": [408, 17], "03-12": [913, 505], "03-13": [931, 18], "03-16": [903, -28], "03-17": [717, -186], "03-18": [745, 28], "03-19": [699, -46], "03-20": [649, -50], "03-23": [621, -28], "03-24": [556, -65], "03-25": [556, 0], "03-26": [397, -159], "03-27": [381, -16], "03-30": [381, 0], "03-31": [0, -381], "04-01": [0, 0], "04-02": [182, 182], "04-03": [331, 149], "04-07": [331, 0], "04-08": [286, -45], "04-09": [286, 0], "04-10": [476, 190], "04-13": [414, -62], "04-14": [389, -25], "04-15": [324, -65], "04-16": [114, -210], "04-17": [154, 40], "04-20": [320, 166], "04-21": [388, 68], "04-22": [351, -37], "04-23": [297, -54], "04-24": [290, -7], "04-27": [277, -13], "04-28": [199, -78], "04-29": [117, -82], "04-30": [0, -117], "05-06": [284, 284], "05-07": [284, 0], "05-08": [317, 33], "05-11": [317, 0], "05-12": [362, 45], "05-13": [362, 0], "05-14": [594, 232], "05-15": [653, 59], "05-18": [653, 0], "05-19": [553, -100], "05-20": [553, 0], "05-21": [579, 26], "05-22": [579, 0], "05-25": [579, 0], "05-26": [478, -101], "05-27": [227, -251], "05-28": [111, -116], "05-29": [0, -111], "06-01": [0, 0], "06-02": [0, 0], "06-03": [0, 0], "06-04": [0, 0], "06-05": [0, 0], "06-08": [0, 0], "06-09": [0, 0], "06-10": [0, 0], "06-11": [0, 0], "06-12": [0, 0], "06-15": [0, 0], "06-16": [0, 0], "06-17": [0, 0], "06-18": [0, 0], "06-22": [0, 0], "06-23": [51, 51], "06-24": [51, 0], "06-25": [51, 0], "06-26": [51, 0], "06-29": [31, -20], "06-30": [0, -31], "07-01": [0, 0], "07-02": [0, 0], "07-03": [0, 0], "07-06": [0, 0], "07-07": [0, 0], "07-08": [0, 0], "07-09": [0, 0], "07-10": [0, 0], "07-13": [0, 0], "07-14": [0, 0], "07-15": [0, 0], "07-16": [0, 0], "07-17": [0, 0], "07-20": [200, 200], "07-21": [200, 0], "07-22": [200, 0], "07-23": [200, 0], "07-24": [203, 3], "07-27": [203, 0], "07-28": [200, -3], "07-29": [200, 0], "07-30": [200, 0], "07-31": [0, -200], "08-03": [0, 0], "08-04": [0, 0], "08-05": [0, 0], "08-06": [0, 0], "08-07": [0, 0], "08-10": [0, 0], "08-11": [0, 0], "08-12": [0, 0], "08-13": [0, 0], "08-14": [0, 0], "08-17": [0, 0], "08-18": [0, 0], "08-19": [0, 0], "08-20": [0, 0], "08-21": [0, 0], "08-24": [0, 0], "08-25": [356, 356], "08-26": [356, 0], "08-27": [356, 0], "08-28": [356, 0], "08-31": [0, -356], "09-01": [0, 0], "09-02": [0, 0], "09-03": [0, 0], "09-04": [0, 0], "09-07": [0, 0], "09-08": [0, 0], "09-09": [0, 0], "09-10": [0, 0], "09-11": [0, 0], "09-14": [0, 0], "09-15": [0, 0], "09-16": [0, 0], "09-17": [0, 0], "09-18": [0, 0], "09-21": [0, 0]}}, "cancels": [{"date": "2026-03-31", "chg": -381, "prev": 381}, {"date": "2026-04-30", "chg": -117, "prev": 117}, {"date": "2026-05-29", "chg": -111, "prev": 111}, {"date": "2026-06-30", "chg": -31, "prev": 31}, {"date": "2026-07-31", "chg": -200, "prev": 200}, {"date": "2026-08-31", "chg": -356, "prev": 356}], "drops": [{"date": "2026-03-09", "chg": -178, "pct": -32.5}, {"date": "2026-03-17", "chg": -186, "pct": -20.6}, {"date": "2026-03-26", "chg": -159, "pct": -28.6}, {"date": "2026-04-16", "chg": -210, "pct": -64.8}, {"date": "2026-05-19", "chg": -100, "pct": -15.3}, {"date": "2026-05-26", "chg": -101, "pct": -17.4}, {"date": "2026-05-27", "chg": -251, "pct": -52.5}, {"date": "2026-05-28", "chg": -116, "pct": -51.1}], "latest": {"date": "2026-09-21", "val": 0, "chg": 0}, "hiA": 931, "loA": 0, "hi1": 931, "lo1": 0, "first": "2026-03-03", "last": "2026-09-21", "n": 140};
+const LABELS = ["01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08", "01-09", "01-10", "01-11", "01-12", "01-13", "01-14", "01-15", "01-16", "01-17", "01-18", "01-19", "01-20", "01-21", "01-22", "01-23", "01-24", "01-25", "01-26", "01-27", "01-28", "01-29", "01-30", "01-31", "02-01", "02-02", "02-03", "02-04", "02-05", "02-06", "02-07", "02-08", "02-09", "02-10", "02-11", "02-12", "02-13", "02-14", "02-15", "02-16", "02-17", "02-18", "02-19", "02-20", "02-21", "02-22", "02-23", "02-24", "02-25", "02-26", "02-27", "02-28", "02-29", "03-01", "03-02", "03-03", "03-04", "03-05", "03-06", "03-07", "03-08", "03-09", "03-10", "03-11", "03-12", "03-13", "03-14", "03-15", "03-16", "03-17", "03-18", "03-19", "03-20", "03-21", "03-22", "03-23", "03-24", "03-25", "03-26", "03-27", "03-28", "03-29", "03-30", "03-31", "04-01", "04-02", "04-03", "04-04", "04-05", "04-06", "04-07", "04-08", "04-09", "04-10", "04-11", "04-12", "04-13", "04-14", "04-15", "04-16", "04-17", "04-18", "04-19", "04-20", "04-21", "04-22", "04-23", "04-24", "04-25", "04-26", "04-27", "04-28", "04-29", "04-30", "05-01", "05-02", "05-03", "05-04", "05-05", "05-06", "05-07", "05-08", "05-09", "05-10", "05-11", "05-12", "05-13", "05-14", "05-15", "05-16", "05-17", "05-18", "05-19", "05-20", "05-21", "05-22", "05-23", "05-24", "05-25", "05-26", "05-27", "05-28", "05-29", "05-30", "05-31", "06-01", "06-02", "06-03", "06-04", "06-05", "06-06", "06-07", "06-08", "06-09", "06-10", "06-11", "06-12", "06-13", "06-14", "06-15", "06-16", "06-17", "06-18", "06-19", "06-20", "06-21", "06-22", "06-23", "06-24", "06-25", "06-26", "06-27", "06-28", "06-29", "06-30", "07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-14", "07-15", "07-16", "07-17", "07-18", "07-19", "07-20", "07-21", "07-22", "07-23", "07-24", "07-25", "07-26", "07-27", "07-28", "07-29", "07-30", "07-31", "08-01", "08-02", "08-03", "08-04", "08-05", "08-06", "08-07", "08-08", "08-09", "08-10", "08-11", "08-12", "08-13", "08-14", "08-15", "08-16", "08-17", "08-18", "08-19", "08-20", "08-21", "08-22", "08-23", "08-24", "08-25", "08-26", "08-27", "08-28", "08-29", "08-30", "08-31", "09-01", "09-02", "09-03", "09-04", "09-05", "09-06", "09-07", "09-08", "09-09", "09-10", "09-11", "09-12", "09-13", "09-14", "09-15", "09-16", "09-17", "09-18", "09-19", "09-20", "09-21", "09-22", "09-23", "09-24", "09-25", "09-26", "09-27", "09-28", "09-29", "09-30", "10-01", "10-02", "10-03", "10-04", "10-05", "10-06", "10-07", "10-08", "10-09", "10-10", "10-11", "10-12", "10-13", "10-14", "10-15", "10-16", "10-17", "10-18", "10-19", "10-20", "10-21", "10-22", "10-23", "10-24", "10-25", "10-26", "10-27", "10-28", "10-29", "10-30", "10-31", "11-01", "11-02", "11-03", "11-04", "11-05", "11-06", "11-07", "11-08", "11-09", "11-10", "11-11", "11-12", "11-13", "11-14", "11-15", "11-16", "11-17", "11-18", "11-19", "11-20", "11-21", "11-22", "11-23", "11-24", "11-25", "11-26", "11-27", "11-28", "11-29", "11-30", "12-01", "12-02", "12-03", "12-04", "12-05", "12-06", "12-07", "12-08", "12-09", "12-10", "12-11", "12-12", "12-13", "12-14", "12-15", "12-16", "12-17", "12-18", "12-19", "12-20", "12-21", "12-22", "12-23", "12-24", "12-25", "12-26", "12-27", "12-28", "12-29", "12-30", "12-31"];
+const SIBS = ["MA", "L", "PP", "V", "PL", "EB", "BZ"];
+let curY = null;
+
+const chart = echarts.init(document.getElementById('chart'), null, {renderer:'canvas'});
+
+function fmt(n){ return n==null ? '—' : n.toLocaleString('en-US'); }
+function fmtC(n){ if(n==null) return '—'; return (n>0?'+':'') + n.toLocaleString('en-US'); }
+
+document.getElementById('sib').innerHTML = SIBS.map(s=>`<a href="${s}.html">${s}</a>`).join('');
+
+function yearList(){ return Object.keys(D.years).sort(); }
+const GREYS = ['#c8c1b1','#aca493','#8f8776','#726a5a','#554e42','#3e382f'];
+
+function stat(k,v,s){ return `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`; }
+
+function buildMeta(){
+  const chgCls = D.latest.chg>0?'up':(D.latest.chg<0?'dn':'');
+  document.getElementById('meta').innerHTML =
+    `<span>交易所 <b>${D.exch}</b></span><span>板块 <b>${D.group}</b></span>`+
+    `<span>单位 <b>${D.unit}</b></span><span>区间 <b>${D.first} ~ ${D.last}</b></span>`+
+    `<span>样本 <b>${D.n} 个交易日</b></span>`;
+  document.getElementById('stats').innerHTML =
+    stat('最新仓单 '+D.latest.date, fmt(D.latest.val)+' '+D.unit, '')+
+    stat('最新日变动', `<span class="${chgCls}">${fmtC(D.latest.chg)}</span>`, D.unit)+
+    stat('近一年最高 / 最低', fmt(D.hi1)+' / '+fmt(D.lo1), D.unit)+
+    stat('区间最高 / 最低', fmt(D.hiA)+' / '+fmt(D.loA), D.unit)+
+    stat('强制注销规则', D.nxt?('下一窗口 '+D.nxt):'无固定注销月份', D.short);
+  document.getElementById('foot').innerHTML =
+    `<b>数据口径：</b>${D.exch}仓单日报直采（交易所官网原始披露文件逐日解析），${D.first} 至 ${D.last}，单位「${D.unit}」。`+
+    `数值为整数原始值，未经四舍五入；与东方财富期货仓单数据交叉核对一致（东财接口仅保留约 70 个交易日，本页历史段为交易所直采独有）。<br>`+
+    `<b>强制注销规则：</b>${D.rule}。${D.detail}。`+
+    `图底部 ◆ 为数据中仓单实际清零（单日降幅≥95%）的日期；● 为规则外的大额自愿注销。`+
+    (D.cancelMonths.length?`主图琥珀色竖带为规则注销月份（${D.cancelMonths.join(' / ')} 月）。`:'该品种无固定注销月份，不加竖带。');
+}
+
+function buildYearChips(){
+  const ys = yearList();
+  if(!curY || !ys.includes(curY)) curY = ys[ys.length-1];
+  const el = document.getElementById('years');
+  el.innerHTML = '<span class="lab">高亮年份</span>' + ys.map(y=>
+    `<button class="ychip${y===curY?' on':''}" data-y="${y}">${y}${y===ys[ys.length-1]?' · 今年':''}</button>`).join('');
+  el.querySelectorAll('.ychip').forEach(b=>b.onclick=()=>{curY=b.dataset.y; render();});
+}
+
+function render(){
+  const ys = yearList();
+  buildYearChips();
+
+  const bandData = D.cancelMonths.map(mm=>{
+    const m2 = String(mm).padStart(2,'0');
+    const endDay = {'01':31,'02':29,'03':31,'04':30,'05':31,'06':30,'07':31,'08':31,'09':30,'10':31,'11':30,'12':31}[m2];
+    return [{xAxis:m2+'-01', itemStyle:{color:'rgba(180,83,9,0.07)'}}, {xAxis:m2+'-'+endDay}];
+  });
+
+  const lineSeries = ys.map((y,i)=>{
+    const map = D.years[y];
+    const data = LABELS.map(l=> map[l] ? map[l][0] : null);
+    const hl = y===curY;
+    return {
+      name:y, type:'line', xAxisIndex:0, yAxisIndex:0, data,
+      connectNulls:true, showSymbol:false, smooth:false,
+      lineStyle:{width: hl?2.6:1.1, color: hl?'#c2402a':GREYS[i%GREYS.length], opacity: hl?1:.85},
+      emphasis:{focus:'series'},
+      z: hl?10:2,
+      markArea: hl && bandData.length ? {silent:true, label:{show:false}, data:bandData} : undefined,
+      markPoint: hl ? {
+        symbol:'pin', symbolSize:34,
+        itemStyle:{color:'#b45309'},
+        label:{fontSize:9, color:'#fff', formatter:'注销'},
+        data: D.cancels.filter(c=>c.date.startsWith(y)).map(c=>({coord:[c.date.slice(5), 0], value:0}))
+      } : undefined
+    };
+  });
+
+  const cmap = D.years[curY]||{};
+  const absMax = Math.max(1, ...LABELS.map(l=> cmap[l]&&cmap[l][1]!=null ? Math.abs(cmap[l][1]) : 0));
+  const labelTh = absMax*0.28;
+  const barData = LABELS.map(l=>{
+    const rec = cmap[l];
+    if(!rec || rec[1]==null) return null;
+    const v = rec[1];
+    return { value:v,
+      itemStyle:{color: v>0?'#c2402a':(v<0?'#256b4a':'#bbb3a2')},
+      label:{show: Math.abs(v)>=labelTh, position: v>0?'top':'bottom', fontSize:9,
+             color: v>0?'#c2402a':'#256b4a', formatter:()=>fmtC(v)} };
+  });
+  const barSeries = { name:curY+' 日变动', type:'bar', xAxisIndex:1, yAxisIndex:1, data:barData, barWidth:'62%' };
+
+  const rowNames = ['自愿', ...ys.slice().reverse()];
+  const canPts = D.cancels.map(c=>({
+    value:[c.date.slice(5), c.date.slice(0,4)],
+    date:c.date, chg:c.chg, prev:c.prev,
+    label:{show:true, position:'right', distance:5, fontSize:9, color:'#b45309', formatter:()=>c.date.slice(5)}
+  }));
+  const dropPts = D.drops.map(p=>({value:[p.date.slice(5),'自愿'], date:p.date, chg:p.chg, pct:p.pct}));
+  const canSeries = { name:'仓单清零日', type:'scatter', xAxisIndex:2, yAxisIndex:2,
+    data:canPts, symbol:'diamond', symbolSize:11, itemStyle:{color:'#b45309'}, z:5,
+    tooltip:{formatter:p=>`${p.data.date}<br>仓单清零（强制注销窗口）<br>前一日仓单 ${fmt(p.data.prev)} → 0（${fmtC(p.data.chg)}）`} };
+  const dropSeries = { name:'大额自愿注销', type:'scatter', xAxisIndex:2, yAxisIndex:2,
+    data:dropPts, symbol:'circle', symbolSize:5, itemStyle:{color:'#9a917f', opacity:.8},
+    tooltip:{formatter:p=>`${p.data.date}<br>大额自愿注销 ${fmtC(p.data.chg)}（${p.data.pct}%）`} };
+
+  const monAxis = { type:'category', data:LABELS, boundaryGap:false,
+    axisLine:{lineStyle:{color:'#ddd6c4'}}, axisTick:{show:false},
+    axisLabel:{fontSize:9, color:'#9a917f', fontFamily:'JetBrains Mono, monospace',
+               interval:(i,v)=> v.endsWith('-01'), formatter:v=> (parseInt(v.slice(0,2))+'月')} };
+
+  chart.setOption({
+    animationDuration:400,
+    grid:[
+      {left:70,right:20,top:34,height:'43%'},
+      {left:70,right:20,top:'56%',height:'17%'},
+      {left:70,right:20,top:'79%',height:'17%'}
+    ],
+    axisPointer:{link:[{xAxisIndex:'all'}], label:{backgroundColor:'#6e675c'}},
+    tooltip:[
+      {trigger:'axis', confine:true, backgroundColor:'#211d19', borderWidth:0,
+       textStyle:{color:'#f5f3ec', fontSize:11, fontFamily:'JetBrains Mono, monospace'},
+       formatter:(ps)=>{
+         const rows = ps.filter(p=>p.seriesType==='line' && p.value!=null);
+         if(!rows.length) return '';
+         let h = '<b>'+ps[0].axisValue+'</b><br>';
+         rows.sort((a,b)=>b.seriesName-a.seriesName).forEach(p=>{
+           const y=p.seriesName, rec=(D.years[y]||{})[p.axisValue];
+           const chg = rec? rec[1]:null;
+           h += `<span style="display:inline-block;width:8px;height:8px;background:${p.color};margin-right:6px"></span>`+
+                `${y}: <b>${fmt(p.value)}</b> <span style="opacity:.75">(${fmtC(chg)})</span><br>`;
+         });
+         return h + '<span style="opacity:.6">单位：'+D.unit+'</span>';
+       }},
+      {trigger:'item', confine:true, backgroundColor:'#211d19', borderWidth:0,
+       textStyle:{color:'#f5f3ec', fontSize:11, fontFamily:'JetBrains Mono, monospace'}}
+    ],
+    xAxis:[
+      {...monAxis, gridIndex:0, axisLabel:{...monAxis.axisLabel, show:true}},
+      {...monAxis, gridIndex:1, axisLabel:{show:false}},
+      {...monAxis, gridIndex:2, boundaryGap:true, axisLabel:{...monAxis.axisLabel, show:true}}
+    ],
+    yAxis:[
+      {gridIndex:0, type:'value', name:'仓单（'+D.unit+'）', nameTextStyle:{fontSize:10,color:'#9a917f'},
+       splitLine:{lineStyle:{color:'#e8e2d2'}}, axisLabel:{fontSize:10,color:'#6e675c',formatter:v=>v.toLocaleString()}},
+      {gridIndex:1, type:'value', name:'日变动', nameTextStyle:{fontSize:10,color:'#9a917f'},
+       splitLine:{lineStyle:{color:'#e8e2d2'}}, axisLabel:{fontSize:10,color:'#6e675c',formatter:v=>fmtC(v)},
+       splitNumber:3},
+      {gridIndex:2, type:'category', data:rowNames, axisLine:{show:false}, axisTick:{show:false},
+       axisLabel:{fontSize:9, color:'#9a917f'}, splitLine:{show:false}}
+    ],
+    series:[...lineSeries, barSeries, canSeries, dropSeries]
+  }, {replaceMerge:['series','xAxis','yAxis','grid','tooltip']});
+}
+
+buildMeta(); render();
+window.addEventListener('resize', ()=>chart.resize());
+</script>
+</body>
+</html>
