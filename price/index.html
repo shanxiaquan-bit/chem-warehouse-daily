@@ -29,6 +29,9 @@ nav a:hover{color:var(--ink);border-color:var(--ink)}
 nav a.on{color:#fdfcf7;background:var(--ink);border-color:var(--ink)}
 h2.sec{font-size:14px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink2);
        border-bottom:1px solid var(--line);padding-bottom:8px;margin:26px 0 12px;font-weight:600}
+/* 链图页标题（含品种按钮）吸顶：紧随主导航（约 42px 高）之下 */
+#view-poly h2.sec,#view-olefin h2.sec,#view-oil h2.sec{
+  position:sticky;top:44px;background:var(--bg);z-index:40;padding-top:8px;margin-top:14px}
 h2.sec span{color:var(--ink3);font-weight:400;letter-spacing:.06em;text-transform:none;font-size:12px;margin-left:10px}
 h2.sec a{color:var(--accent);text-decoration:none;margin-left:10px;font-size:12px;letter-spacing:.06em;text-transform:none}
 h2.sec a:hover{text-decoration:underline}
@@ -65,7 +68,7 @@ td.big-dn{background:#c9dcc9;color:#1c5a3e;font-weight:700}
 .block>h3 span{color:var(--ink3);font-weight:400;letter-spacing:.06em;margin-left:8px;font-size:11px}
 .charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:10px}
 .card{background:var(--panel);border:1px solid var(--line);padding:12px 14px 6px;transition:border-color .15s ease;
-      cursor:zoom-in;scroll-margin-top:84px}
+      cursor:zoom-in;scroll-margin-top:130px}
 .card:hover{border-color:var(--ink)}
 .card.hit{border-color:var(--accent);box-shadow:0 0 0 3px #c2402a33}
 .card .ct{font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
