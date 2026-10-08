@@ -331,6 +331,10 @@ const nav=document.getElementById('nav');
 PAGES.forEach(([id,name])=>{
   const a=document.createElement('a'); a.href='#/'+id; a.textContent=name; a.dataset.pid=id; nav.appendChild(a);
 });
+// 每日异动简评外链（云端 ./review.html；本地与图集同目录也可打开）
+const rv=document.createElement('a');
+rv.href='./review.html'; rv.textContent='异动简评'; rv.target='_blank';
+rv.style.marginLeft='auto'; nav.appendChild(rv);
 function route(){
   const h=(location.hash||'#/home').replace(/^#\//,'');
   const parts=h.split('/');
