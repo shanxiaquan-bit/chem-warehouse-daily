@@ -129,7 +129,7 @@ footer b{color:var(--ink)}
   <div id="lbClose">×</div>
 </div></div>
 <script src="./echarts.min.js"></script>
-<script src="./data.js?v=e45c42ce"></script>
+<script src="./data.js?v=132d9c8b"></script>
 <script>
 const DATA = window.__ATLAS_DATA__;
 const ASOF = DATA.asof;
@@ -311,9 +311,9 @@ const nav=document.getElementById('nav');
 PAGES.forEach(([id,name])=>{
   const a=document.createElement('a'); a.href='#/'+id; a.textContent=name; a.dataset.pid=id; nav.appendChild(a);
 });
-// VaR 测算台外链（紧跟「价格目录 · 首页」之后）
+// VaR 目录外链（紧跟「价格目录 · 首页」之后）
 const posA=document.createElement('a');
-posA.href='./position.html'; posA.textContent='持仓组合 · VaR'; posA.target='_blank';
+posA.href='./var.html'; posA.textContent='VaR 目录'; posA.target='_blank';
 nav.insertBefore(posA, nav.children[1] || null);
 // 每日异动简评外链（云端 ./review.html；本地与图集同目录也可打开）
 const rv=document.createElement('a');
