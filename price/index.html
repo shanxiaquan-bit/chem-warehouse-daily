@@ -120,7 +120,7 @@ footer b{color:var(--ink)}
   <b>跨品种价差公式（沿用原库）：</b>PF加工费=PF−0.855TA−0.335EG−900｜TA加工费=TA−0.65PX｜BU-SC=BU−7.2×SC｜PDH=PP−1.2×PG｜MTO=(EG−(3MA+800)×0.6−1000)×5/9+(PP−(3MA+1200))×4/9｜FEI-MOPJ=FEI丙烷−石脑油MOPJ｜FEI-PG=FEI丙烷−PG主连÷美元兑人民币即期（美元/吨）。<br>
   <b>目录变动：</b>日/周/月变动 = 最新 − 前 1 / 5 / 21 个交易日；主连品种的变动按<b>换月复权</b>计算（换月日涨跌用新合约自身价格，避免换月跳变污染；近月内发生过换月的行标注「已复权」，此时「最新−昨日」直减与变动列可能有差异）；色柱长度 ∝ 变动幅度占本组最大变动的比例；<b>浅红/浅绿 = 常规涨跌，深红/深绿 = 显著变动</b>（主连 |%|≥2%，价差进入自身历史 |变动| 前 5%）。<br>
   <b>价格结构：</b>近一~近五合约收盘价连线，对比当日 / 昨日 / 上周 / 上上周四个时点；近五−近一 &lt; 0 为 back（近强远弱），&gt; 0 为 contango。<br>
-  <b>图例约定：</b><span style="color:var(--accent);font-weight:700">朱红粗线 = 最新年度/合约对</span>，黑色虚线 = 2021–2025 均值（9 日平滑）；「分位」= 当前值在 2021–2025 全历史中的百分位。<b>点击任意图表可放大查看</b>。
+  <b>图例约定：</b><span style="color:var(--accent);font-weight:700">朱红粗线 = 最新年度/合约对</span>，黑色虚线 = 2021–2025 均值（9 日平滑）；「分位」= 当前值在 2021–2025 全历史中的百分位。主连季节图的曲线/均值/分位取自<b>换月复权连续序列</b>（换月日涨跌用新合约自身价格、末值锚定原始主连，卡片副标题标注「· 换月复权」）。<b>点击任意图表可放大查看</b>。
 </footer>
 </div>
 <div id="lb"><div id="lbBox">
@@ -129,7 +129,7 @@ footer b{color:var(--ink)}
   <div id="lbClose">×</div>
 </div></div>
 <script src="./echarts.min.js"></script>
-<script src="./data.js?v=1ec5a68d"></script>
+<script src="./data.js?v=2cd2e2cc"></script>
 <script>
 const DATA = window.__ATLAS_DATA__;
 const ASOF = DATA.asof;
